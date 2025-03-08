@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Assistant</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary-color: #7F5AF0;
+            --primary-hover: #9370DB;
+            --secondary-color: #2CB67D;
+            --background-color: #FFFFFE;
+            --card-color: #FFFFFE;
+            --text-color: #16161A;
+            --text-secondary: #72757E;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --shadow-strong: 0 20px 40px rgba(0, 0, 0, 0.12);
+            --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --border-radius: 16px;
+            --accent-color: #E45858;
+            --bg-gradient: linear-gradient(120deg, rgba(127, 90, 240, 0.05) 0%, rgba(44, 182, 125, 0.05) 100%);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-image: var(--bg-gradient);
+            background-attachment: fixed;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 500px;
+            padding: 20px;
+        }
+
+        .assistant-card {
+            background-color: var(--card-color);
+            border-radius: var(--border-radius);
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .assistant-card:hover {
+            box-shadow: var(--shadow-strong);
+            transform: translateY(-3px);
+        }
+
+        .assistant-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .assistant-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .assistant-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            font-weight: 400;
+            max-width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .status-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2.5rem;
+            padding: 1rem;
+            background-color: rgba(0, 0, 0, 0.02);
+            border-radius: 12px;
+            transition: var(--transition);
+        }
+
+        .status-circle {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #dfe6e9;
+            margin-right: 12px;
+            transition: var(--transition);
+            box-shadow: 0 0 0 4px rgba(223, 230, 233, 0.3);
+        }
+
+        .status-circle.active {
+            background-color: var(--secondary-color);
+            box-shadow: 0 0 0 4px rgba(44, 182, 125, 0.3);
+        }
+
+        .status-text {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .control-button {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 140px;
+        }
+
+        .control-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(120deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0) 100%);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+
+        .control-button:hover::before {
+            transform: translateX(100%);
+        }
+
+        .control-button:first-child {
+            background-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 15px rgba(127, 90, 240, 0.3);
+        }
+
+        .control-button:first-child:hover {
+            background-color: var(--primary-hover);
+            box-shadow: 0 6px 20px rgba(127, 90, 240, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .control-button.secondary {
+            background-color: var(--accent-color);
+            color: white;
+            box-shadow: 0 4px 15px rgba(228, 88, 88, 0.3);
+        }
+
+        .control-button.secondary:hover {
+            background-color: #f05d5d;
+            box-shadow: 0 6px 20px rgba(228, 88, 88, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .voice-button {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin: 0 auto;
+            position: relative;
+            transition: var(--transition);
+            box-shadow: 0 6px 20px rgba(127, 90, 240, 0.3);
+            z-index: 1;
+        }
+
+        .voice-button::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-hover), var(--primary-color));
+            opacity: 0;
+            transition: var(--transition);
+            z-index: -1;
+        }
+
+        .voice-button:hover {
+            transform: scale(1.05) translateY(-3px);
+            box-shadow: 0 10px 25px rgba(127, 90, 240, 0.5);
+        }
+
+        .voice-button:hover::after {
+            opacity: 1;
+        }
+
+        .voice-button:active {
+            transform: scale(0.98);
+        }
+
+        .voice-button .ripple {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 2px solid var(--primary-color);
+            opacity: 0;
+            transform: scale(1);
+        }
+
+        .voice-button.listening .ripple {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(1.8);
+                opacity: 0;
+            }
+        }
+
+        .mic-icon {
+            width: 32px;
+            height: 32px;
+            fill: white;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
+        }
+
+        .message-container {
+            background: rgba(245, 245, 247, 0.7);
+            border-radius: 16px;
+            padding: 1.2rem 1.5rem;
+            margin-top: 2.5rem;
+            min-height: 60px;
+            transition: var(--transition);
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            backdrop-filter: blur(5px);
+        }
+
+        .message {
+            margin: 0;
+            color: var(--text-color);
+            font-size: 1.05rem;
+            text-align: center;
+            line-height: 1.5;
+            font-weight: 400;
+        }
+
+        .wave {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 30px;
+            margin: 0.8rem auto 0;
+            gap: 4px;
+        }
+
+        .wave-bar {
+            display: inline-block;
+            width: 3px;
+            height: 20px;
+            margin: 0 2px;
+            background-color: var(--primary-color);
+            border-radius: 3px;
+            animation: wave 1.2s infinite ease-in-out;
+        }
+
+        .wave-bar:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .wave-bar:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .wave-bar:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+
+        .wave-bar:nth-child(5) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes wave {
+            0%, 40%, 100% {
+                transform: scaleY(0.3);
+            }
+            20% {
+                transform: scaleY(1);
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            cursor: pointer;
+            font-size: 1.2rem;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: var(--transition);
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+
+        .theme-toggle:hover {
+            background-color: rgba(0, 0, 0, 0.06);
+            transform: translateY(-2px);
+        }
+
+        .dark-mode {
+            --background-color: #16161A;
+            --card-color: #242629;
+            --text-color: #FFFFFE;
+            --text-secondary: #94A1B2;
+            --bg-gradient: linear-gradient(120deg, rgba(127, 90, 240, 0.1) 0%, rgba(44, 182, 125, 0.1) 100%);
+        }
+
+        .dark-mode .message-container {
+            background: rgba(36, 38, 41, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .dark-mode .status-container {
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+
+        .dark-mode .theme-toggle {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .dark-mode .theme-toggle:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Button icons */
+        .btn-icon {
+            margin-right: 8px;
+            width: 18px;
+            height: 18px;
+        }
+        
+        /* Shining effect */
+        .assistant-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(
+                circle,
+                rgba(255, 255, 255, 0.1) 0%,
+                rgba(255, 255, 255, 0) 70%
+            );
+            opacity: 0;
+            z-index: 0;
+            transition: opacity 0.5s;
+            pointer-events: none;
+        }
+        
+        .assistant-card:hover::before {
+            opacity: 1;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .container {
+                width: 100%;
+                padding: 15px;
+            }
+            
+            .assistant-card {
+                padding: 1.8rem;
+                border-radius: 14px;
+            }
+            
+            .assistant-title {
+                font-size: 1.8rem;
+            }
+            
+            .assistant-subtitle {
+                font-size: 1rem;
+                max-width: 90%;
+            }
+            
+            .voice-button {
+                width: 80px;
+                height: 80px;
+            }
+            
+            .control-button {
+                min-width: 120px;
+                padding: 0.8rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="assistant-card">
+            <!-- Add this near the top of your voice assistant page, inside the assistant-card -->
+<div style="position: absolute; top: 20px; left: 20px;">
+    <a href="room-automation.html" style="display: flex; align-items: center; color: var(--primary-color); text-decoration: none; font-weight: 500;">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 12H5"></path>
+            <path d="M12 19l-7-7 7-7"></path>
+        </svg>
+        <span style="margin-left: 8px;">Back to Home</span>
+    </a>
+</div>
+            <button class="theme-toggle" id="themeToggle">🌙</button>
+            <div class="assistant-header">
+                <h1 class="assistant-title">Voice Assistant</h1>
+                <p class="assistant-subtitle">Just say "turn on" or "turn off" - I'm always listening</p>
+                <div style="width: 60px; height: 4px; background: linear-gradient(to right, var(--primary-color), var(--secondary-color)); margin: 1.5rem auto 0; border-radius: 2px;"></div>
+            </div>
+            
+            <div class="status-container">
+                <div class="status-circle" id="statusIndicator"></div>
+                <span class="status-text" id="statusText">Device is off</span>
+            </div>
+            
+            <div class="button-container">
+                <button class="control-button" id="onButton">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+                        <line x1="12" y1="2" x2="12" y2="12"></line>
+                    </svg>
+                    Turn On
+                </button>
+                <button class="control-button secondary" id="offButton">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
+                        <line x1="12" y1="2" x2="12" y2="12"></line>
+                    </svg>
+                    Turn Off
+                </button>
+            </div>
+            
+            <button class="voice-button" id="voiceButton">
+                <div class="ripple"></div>
+                <svg class="mic-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                    <line x1="12" y1="19" x2="12" y2="23"></line>
+                    <line x1="8" y1="23" x2="16" y2="23"></line>
+                </svg>
+            </button>
+            
+            <div class="message-container">
+                <p class="message" id="message">Tap the microphone or use buttons to control your device</p>
+                <div class="wave hidden" id="waveAnimation">
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                    <div class="wave-bar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Elements
+            const voiceButton = document.getElementById('voiceButton');
+            const onButton = document.getElementById('onButton');
+            const offButton = document.getElementById('offButton');
+            const statusIndicator = document.getElementById('statusIndicator');
+            const statusText = document.getElementById('statusText');
+            const message = document.getElementById('message');
+            const waveAnimation = document.getElementById('waveAnimation');
+            const themeToggle = document.getElementById('themeToggle');
+            
+            // URLs
+            const turnOnUrl = 'https://blr1.blynk.cloud/external/api/update?token=-6jzpd2c9reJTLWEiaidb0iqtgNLSd4_&v0=1';
+            const turnOffUrl = 'https://blr1.blynk.cloud/external/api/update?token=-6jzpd2c9reJTLWEiaidb0iqtgNLSd4_&v0=0';
+            
+            // Device state
+            let isDeviceOn = false;
+            
+            // Speech recognition
+            let recognition = null;
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.continuous = true;
+                recognition.interimResults = false;
+                recognition.lang = 'en-US';
+                
+                recognition.onstart = function() {
+                    voiceButton.classList.add('listening');
+                    message.textContent = "Listening...";
+                    waveAnimation.classList.remove('hidden');
+                };
+                
+                recognition.onresult = function(event) {
+                    const last = event.results.length - 1;
+                    const transcript = event.results[last][0].transcript.toLowerCase();
+                    message.textContent = `You said: "${transcript}"`;
+                    
+                    if (transcript.includes('turn on') || transcript.includes('on') || transcript.includes('start')) {
+                        turnOn();
+                    } else if (transcript.includes('turn off') || transcript.includes('off') || transcript.includes('stop')) {
+                        turnOff();
+                    } else {
+                        speak("I didn't understand. Please say turn on or turn off.");
+                    }
+                };
+                
+                recognition.onend = function() {
+                    // Restart recognition when it ends to keep it always listening
+                    try {
+                        recognition.start();
+                    } catch (e) {
+                        console.error('Recognition restart error:', e);
+                        setTimeout(() => {
+                            try {
+                                recognition.start();
+                            } catch (e) {
+                                console.error('Delayed restart failed:', e);
+                            }
+                        }, 1000);
+                    }
+                };
+                
+                recognition.onerror = function(event) {
+                    message.textContent = "Error occurred in recognition: " + event.error;
+                    // Don't stop listening on error
+                    if (event.error !== 'no-speech') {
+                        setTimeout(() => {
+                            try {
+                                recognition.abort();
+                                recognition.start();
+                            } catch (e) {
+                                console.error('Error restart failed:', e);
+                            }
+                        }, 1000);
+                    }
+                };
+            } else {
+                message.textContent = "Speech recognition is not supported by your browser.";
+                voiceButton.disabled = true;
+            }
+            
+            // Speech synthesis
+            function speak(text) {
+                if ('speechSynthesis' in window) {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    window.speechSynthesis.speak(utterance);
+                }
+            }
+            
+            // Control functions
+            function turnOn() {
+                fetch(turnOnUrl)
+                    .then(response => {
+                        if (response.ok) {
+                            updateStatus(true);
+                            speak("Device turned on");
+                        } else {
+                            throw new Error('Network response was not ok');
+                        }
+                    })
+                    .catch(error => {
+                        message.textContent = "Error: Could not turn on the device";
+                        console.error('Error:', error);
+                    });
+            }
+            
+            function turnOff() {
+                fetch(turnOffUrl)
+                    .then(response => {
+                        if (response.ok) {
+                            updateStatus(false);
+                            speak("Device turned off");
+                        } else {
+                            throw new Error('Network response was not ok');
+                        }
+                    })
+                    .catch(error => {
+                        message.textContent = "Error: Could not turn off the device";
+                        console.error('Error:', error);
+                    });
+            }
+            
+            function updateStatus(isOn) {
+                isDeviceOn = isOn;
+                if (isOn) {
+                    statusIndicator.classList.add('active');
+                    statusText.textContent = "Device is on";
+                    message.textContent = "Device is now turned on";
+                } else {
+                    statusIndicator.classList.remove('active');
+                    statusText.textContent = "Device is off";
+                    message.textContent = "Device is now turned off";
+                }
+            }
+            
+            // Event listeners
+            voiceButton.addEventListener('click', function() {
+                if (recognition) {
+                    try {
+                        // Toggle recognition state
+                        if (voiceButton.classList.contains('listening')) {
+                            recognition.stop();
+                            voiceButton.classList.remove('listening');
+                            waveAnimation.classList.add('hidden');
+                            message.textContent = "Voice recognition paused. Click to resume.";
+                        } else {
+                            recognition.start();
+                        }
+                    } catch (e) {
+                        console.error('Recognition error:', e);
+                    }
+                }
+            });
+            
+            onButton.addEventListener('click', turnOn);
+            offButton.addEventListener('click', turnOff);
+            
+            // Theme toggle
+            themeToggle.addEventListener('click', function() {
+                document.body.classList.toggle('dark-mode');
+                if (document.body.classList.contains('dark-mode')) {
+                    themeToggle.textContent = '☀️';
+                } else {
+                    themeToggle.textContent = '🌙';
+                }
+            });
+            
+            // Check initial state (optional, if API supports it)
+            // For this example, we'll just set it to off initially
+            updateStatus(false);
+            
+            // Start listening immediately
+            if (recognition) {
+                try {
+                    recognition.start();
+                    message.textContent = "Voice assistant is listening...";
+                } catch (e) {
+                    console.error('Initial recognition start error:', e);
+                    message.textContent = "Could not start voice recognition automatically. Click the microphone button to try again.";
+                }
+            }
+        });
+    </script>
+</body>
+</html>
