@@ -542,9 +542,9 @@
                     const transcript = event.results[last][0].transcript.toLowerCase();
                     message.textContent = `You said: "${transcript}"`;
                     
-                    if (transcript.includes('turn on') || transcript.includes('on') || transcript.includes('start')) {
+                    if (transcript.includes('turn on') || transcript.includes('on')|| transcript.includes('switch on') || transcript.includes('start')) {
                         turnOn();
-                    } else if (transcript.includes('turn off') || transcript.includes('off') || transcript.includes('stop')) {
+                    } else if (transcript.includes('turn off') || transcript.includes('off')|| transcript.includes('switch off') || transcript.includes('stop')) {
                         turnOff();
                     } else {
                         speak("I didn't understand. Please say turn on or turn off.");
