@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+        // Simple authentication check
+        (function() {
+            // Check if user is logged in
+            const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
+            
+            // If not logged in, redirect to login page
+            if (!isLoggedIn) {
+                window.location.href = 'login.html';
+            }
+        })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Room Control</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #5664D2;
+            --primary-light: #7C8CE8;
+            --primary-dark: #3F4DB3;
+            --accent: #FF7A6A;
+            --accent-light: #FFB4AB;
+            --dark: #1F2125;
+            --gray-dark: #383E50;
+            --gray: #8890A6;
+            --gray-light: #E4E6F0;
+            --light: #F7F9FC;
+            --white: #FFFFFF;
+            --success: #4CD964;
+            --warning: #FFCC00;
+            --info: #54C7FC;
+            --danger: #FF3B30;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.07);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            --border-radius: 16px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            margin-bottom: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .navbar {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            font-size: 26px;
+            color: var(--primary);
+            margin-right: 12px;
+        }
+        
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin: 0;
+        }
+        
+        .header-actions button {
+            background: transparent;
+            border: none;
+            font-size: 24px;
+            color: var(--gray);
+            cursor: pointer;
+            margin-left: 15px;
+            transition: var(--transition);
+        }
+        
+        .header-actions button:hover {
+            color: var(--primary);
+        }
+        
+        .greeting {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .greeting h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+        
+        .greeting p {
+            font-size: 1.1rem;
+            color: var(--gray);
+        }
+        
+        .room-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+        
+        .stat-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-3px);
+        }
+        
+        .stat-icon {
+            font-size: 28px;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        .devices-section {
+            margin-bottom: 50px;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title i {
+            font-size: 22px;
+            margin-right: 10px;
+            color: var(--primary);
+        }
+        
+        .device-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+        
+        .device-card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            position: relative;
+        }
+        
+        .device-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-5px);
+        }
+        
+        .device-card.on {
+            border-left: 4px solid var(--success);
+        }
+        
+        .device-card.off {
+            border-left: 4px solid var(--gray);
+        }
+        
+        .device-content {
+            padding: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .device-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .device-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background-color: var(--light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 24px;
+            color: var(--primary);
+        }
+        
+        .device-name {
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        
+        .device-status {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--gray-light);
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        input:checked + .slider {
+            background-color: var(--success);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .scenes-section {
+            margin-bottom: 50px;
+        }
+        
+        .scenes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .scene-card {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .scene-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-3px);
+        }
+        
+        .scene-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            font-size: 26px;
+            color: var(--white);
+        }
+        
+        .scene-name {
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .scene-desc {
+            font-size: 0.85rem;
+            color: var(--gray);
+            text-align: center;
+        }
+        
+        .system-status {
+            background: var(--white);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 40px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .status-title {
+            font-size: 1.3rem;
+            font-weight: 500;
+            margin-bottom: 20px;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-title i {
+            margin-right: 10px;
+            color: var(--primary);
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .status-item {
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            border-radius: 12px;
+            background-color: var(--light);
+        }
+        
+        .status-label {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-bottom: 8px;
+        }
+        
+        .status-value {
+            font-weight: 500;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .status-value.connected {
+            color: var(--success);
+        }
+        
+        .status-value.disconnected {
+            color: var(--danger);
+        }
+        
+        .status-value i {
+            margin-right: 8px;
+        }
+        
+        .status-loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 3px solid rgba(86, 100, 210, 0.2);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .toast-container {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 1000;
+        }
+        
+        .toast {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            transform: translateX(120%);
+            transition: transform 0.3s ease;
+            min-width: 280px;
+            max-width: 350px;
+        }
+        
+        .toast.show {
+            transform: translateX(0);
+        }
+        
+        .toast-icon {
+            font-size: 20px;
+            margin-right: 15px;
+        }
+        
+        .toast-success .toast-icon {
+            color: var(--success);
+        }
+        
+        .toast-error .toast-icon {
+            color: var(--danger);
+        }
+        
+        .toast-message {
+            flex: 1;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px 0;
+            color: var(--gray);
+            font-size: 0.9rem;
+            border-top: 1px solid var(--gray-light);
+        }
+        
+        .logout-container {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            border-radius: 12px;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            transition: var(--transition);
+            font-size: 0.95rem;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            opacity: 0.9;
+        }
+        
+        .btn i {
+            margin-right: 8px;
+        }
+        
+        /* Dark mode theme */
+        .dark-mode {
+            background-color: var(--dark);
+            color: var(--light);
+        }
+        
+        .dark-mode .navbar,
+        .dark-mode .logo h1,
+        .dark-mode .greeting h2,
+        .dark-mode .device-name,
+        .dark-mode .scene-name,
+        .dark-mode .status-title {
+            color: var(--light);
+        }
+        
+        .dark-mode .stat-card,
+        .dark-mode .device-card,
+        .dark-mode .scene-card,
+        .dark-mode .system-status {
+            background-color: var(--gray-dark);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .dark-mode .device-icon,
+        .dark-mode .status-item {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .greeting h2 {
+                font-size: 1.8rem;
+            }
+            
+            .device-grid, 
+            .scenes-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .room-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .room-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stat-card, 
+            .device-card, 
+            .scene-card {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="navbar">
+                <div class="logo">
+                    <i class="fas fa-home"></i>
+                    <h1>Smart Room</h1>
+                </div>
+                <div class="header-actions">
+                    <button id="theme-toggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button>
+                        <i class="fas fa-bell"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="greeting">
+                <h2>Welcome Home</h2>
+                <p>Manage your smart devices with a single touch</p>
+            </div>
+        </header>
+        
+        <div class="room-stats">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-temperature-low"></i>
+                </div>
+                <div class="stat-value">24°C</div>
+                <div class="stat-label">Temperature</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-tint"></i>
+                </div>
+                <div class="stat-value">45%</div>
+                <div class="stat-label">Humidity</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <div class="stat-value" id="active-devices">2</div>
+                <div class="stat-label">Active Devices</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-plug"></i>
+                </div>
+                <div class="stat-value">0.4kWh</div>
+                <div class="stat-label">Energy Today</div>
+            </div>
+        </div>
+        
+        <div class="devices-section">
+            <h2 class="section-title">
+                <i class="fas fa-sliders-h"></i>
+                Device Controls
+            </h2>
+            
+            <div class="device-grid">
+                <!-- Device 1: Main Light -->
+                <div class="device-card off" id="device-1">
+                    <div class="device-content">
+                        <div class="device-info">
+                            <div class="device-icon">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <div>
+                                <h3 class="device-name">Main Light</h3>
+                                <div class="device-status" id="status-1">Currently OFF</div>
+                            </div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="switch-1">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Device 2: Table Lamp -->
+                <div class="device-card off" id="device-2">
+                    <div class="device-content">
+                        <div class="device-info">
+                            <div class="device-icon">
+                                <i class="fas fa-desk"></i>
+                            </div>
+                            <div>
+                                <h3 class="device-name">Table Lamp</h3>
+                                <div class="device-status" id="status-2">Currently OFF</div>
+                            </div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="switch-2">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Device 3: Fan -->
+                <div class="device-card off" id="device-3">
+                    <div class="device-content">
+                        <div class="device-info">
+                            <div class="device-icon">
+                                <i class="fas fa-fan"></i>
+                            </div>
+                            <div>
+                                <h3 class="device-name">Fan</h3>
+                                <div class="device-status" id="status-3">Currently OFF</div>
+                            </div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="switch-3">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Device 4: Air Conditioner -->
+                <div class="device-card off" id="device-4">
+                    <div class="device-content">
+                        <div class="device-info">
+                            <div class="device-icon">
+                                <i class="fas fa-wind"></i>
+                            </div>
+                            <div>
+                                <h3 class="device-name">AC</h3>
+                                <div class="device-status" id="status-4">Currently OFF</div>
+                            </div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" id="switch-4">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="scenes-section">
+            <h2 class="section-title">
+                <i class="fas fa-magic"></i>
+                Quick Scenes
+            </h2>
+            
+            <div class="scenes-grid">
+                <div class="scene-card" id="scene-morning">
+                    <div class="scene-icon" style="background-color: #FFCC00;">
+                        <i class="fas fa-sun"></i>
+                    </div>
+                    <h3 class="scene-name">Good Morning</h3>
+                    <p class="scene-desc">Turns on main light and fan</p>
+                </div>
+                
+                <div class="scene-card" id="scene-night">
+                    <div class="scene-icon" style="background-color: #5664D2;">
+                        <i class="fas fa-moon"></i>
+                    </div>
+                    <h3 class="scene-name">Night Mode</h3>
+                    <p class="scene-desc">Turns on table lamp only</p>
+                </div>
+                
+                <div class="scene-card" id="scene-away">
+                    <div class="scene-icon" style="background-color: #FF3B30;">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </div>
+                    <h3 class="scene-name">Away</h3>
+                    <p class="scene-desc">Turns off all devices</p>
+                </div>
+                
+                <div class="scene-card" id="scene-movie">
+                    <div class="scene-icon" style="background-color: #AF52DE;">
+                        <i class="fas fa-film"></i>
+                    </div>
+                    <h3 class="scene-name">Movie Mode</h3>
+                    <p class="scene-desc">Dim lights, AC on</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="system-status">
+            <h2 class="status-title">
+                <i class="fas fa-laptop-code"></i>
+                System Status
+            </h2>
+            
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-label">Connection</div>
+                    <div class="status-value" id="connection-status">
+                        <i class="fas fa-circle"></i>
+                        Checking...
+                        <span class="status-loading"></span>
+                    </div>
+                </div>
+                
+                <div class="status-item">
+                    <div class="status-label">Last Updated</div>
+                    <div class="status-value" id="last-updated">--</div>
+                </div>
+                
+                <div class="status-item">
+                    <div class="status-label">Device ID</div>
+                    <div class="status-value">ESP32-ROOM-CONTROL</div>
+                </div>
+                
+                <div class="status-item">
+                    <div class="status-label">Firmware</div>
+                    <div class="status-value">v1.2.0</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="logout-container">
+            <button id="logout-btn" class="btn btn-danger">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </div>
+    
+    <div class="toast-container" id="toast-container"></div>
+    
+    <footer>
+        <p>&copy; 2025 Smart Room Control | EME SCHOOL</p>
+    </footer>
+
+    <script>
+        // Blynk API configuration
+        const BLYNK_AUTH = "-6jzpd2c9reJTLWEiaidb0iqtgNLSd4_"; // Your Blynk token
+        const BLYNK_SERVER = "blr1.blynk.cloud"; // Blynk server domain
+        
+        // Virtual pin numbers
+        const SWITCH_1_VPIN = "v0";
+        const SWITCH_2_VPIN = "v1";
+        const SWITCH_3_VPIN = "v2";
+        const SWITCH_4_VPIN = "v3";
+        
+        // DOM elements
+        const switch1Element = document.getElementById('switch-1');
+        const switch2Element = document.getElementById('switch-2');
+        const switch3Element = document.getElementById('switch-3');
+        const switch4Element = document.getElementById('switch-4');
+        const device1Element = document.getElementById('device-1');
+        const device2Element = document.getElementById('device-2');
+        const device3Element = document.getElementById('device-3');
+        const device4Element = document.getElementById('device-4');
+        const status1Element = document.getElementById('status-1');
+        const status2Element = document.getElementById('status-2');
+        const status3Element = document.getElementById('status-3');
+        const status4Element = document.getElementById('status-4');
+        const connectionStatus = document.getElementById('connection-status');
+        const lastUpdated = document.getElementById('last-updated');
+        const toastContainer = document.getElementById('toast-container');
+        const activeDevicesElement = document.getElementById('active-devices');
+        const logoutBtn = document.getElementById('logout-btn');
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        
+        // Device states
+        let deviceStates = {
+            switch1: false,
+            switch2: false,
+            switch3: false,
+            switch4: false
+        };
+        
+        // Dark mode toggle
+        let darkMode = localStorage.getItem('darkMode') === 'enabled';
+        
+        // Apply dark mode if enabled
+        if (darkMode) {
+            document.body.classList.add('dark-mode');
+            themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+        }
+        
+        // Add event listeners
+        switch1Element.addEventListener('change', () => toggleDevice(1, SWITCH_1_VPIN));
+        switch2Element.addEventListener('change', () => toggleDevice(2, SWITCH_2_VPIN));
+        switch3Element.addEventListener('change', () => toggleDevice(3, SWITCH_3_VPIN));
+        switch4Element.addEventListener('change', () => toggleDevice(4, SWITCH_4_VPIN));
+        logoutBtn.addEventListener('click', logout);
+        themeToggleBtn.addEventListener('click', toggleDarkMode);
+        
+        // Scene event listeners
+        document.getElementById('scene-morning').addEventListener('click', activateMorningScene);
+        document.getElementById('scene-night').addEventListener('click', activateNightScene);
+        document.getElementById('scene-away').addEventListener('click', activateAwayScene);
+        document.getElementById('scene-movie').addEventListener('click', activateMovieScene);
+        
+        // Function to toggle dark mode
+        function toggleDarkMode() {
+            if (darkMode) {
+                document.body.classList.remove('dark-mode');
+                themeToggleBtn.innerHTML = '<i class="fas fa-moon"></i>';
+                localStorage.setItem('darkMode', 'disabled');
+                darkMode = false;
+            } else {
+                document.body.classList.add('dark-mode');
+                themeToggleBtn.innerHTML = '<i class="fas fa-sun"></i>';
+                localStorage.setItem('darkMode', 'enabled');
+                darkMode = true;
+            }
+        }
+        
+        // Function to toggle device state
+        function toggleDevice(deviceNumber, vPin) {
+            const switchElement = document.getElementById(`switch-${deviceNumber}`);
+            const newState = switchElement.checked;
+            const deviceKey = `switch${deviceNumber}`;
+            
+            updatePinValue(vPin, newState ? "1" : "0");
+            showToast(`${newState ? 'Turning ON' : 'Turning OFF'} device...`, 'success');
+            
+            // Update UI based on the switch change
+            updateDeviceUI(deviceNumber, newState);
+            
+            // Update device state
+            deviceStates[deviceKey] = newState;
+            
+            // Update active devices count
+            updateActiveDevicesCount();
+        }
+        
+        // Function to update Blynk pin value
+        function updatePinValue(pin, value) {
+            connectionStatus.innerHTML = '<i class="fas fa-circle"></i> Updating... <span class="status-loading"></span>';
+            
+            // Construct the URL for updating the pin value
+            fetch(`https://${BLYNK_SERVER}/external/api/update?token=${BLYNK_AUTH}&${pin}=${value}`)
+                .then(response => {
+                    if (response.ok) {
+                        return response.text();
+                    } else {
+                        throw new Error(`Failed to update (HTTP ${response.status})`);
+                    }
+                })
+                .then(data => {
+                    console.log("Update response:", data);
+                    connectionStatus.innerHTML = '<i class="fas fa-circle connected"></i> Connected';
+                    connectionStatus.classList.add('connected');
+                    lastUpdated.textContent = new Date().toLocaleTimeString();
+                })
+                .catch(error => {
+                    connectionStatus.innerHTML = '<i class="fas fa-circle disconnected"></i> Disconnected';
+                    connectionStatus.classList.add('disconnected');
+                    showToast(`Failed to connect: ${error.message}`, 'error');
+                    console.error('Error:', error);
+                });
+        }
+        
+        // Function to update device UI
+        function updateDeviceUI(deviceNumber, isOn) {
+            const deviceElement = document.getElementById(`device-${deviceNumber}`);
+            const statusElement = document.getElementById(`status-${deviceNumber}`);
+            
+            if (isOn) {
+                deviceElement.classList.remove('off');
+                deviceElement.classList.add('on');
+                statusElement.textContent = 'Currently ON';
+            } else {
+                deviceElement.classList.remove('on');
+                deviceElement.classList.add('off');
+                statusElement.textContent = 'Currently OFF';
+            }
+        }
+        
+        // Function to update active devices count
+        function updateActiveDevicesCount() {
+            const activeCount = Object.values(deviceStates).filter(state => state).length;
+            activeDevicesElement.textContent = activeCount;
+        }
+        
+        // Function to get current device statuses
+        function refreshStatus() {
+            connectionStatus.innerHTML = '<i class="fas fa-circle"></i> Checking... <span class="status-loading"></span>';
+            
+            // Get status for each switch
+            Promise.all([
+                fetchPinStatus(SWITCH_1_VPIN),
+                fetchPinStatus(SWITCH_2_VPIN),
+                fetchPinStatus(SWITCH_3_VPIN),
+                fetchPinStatus(SWITCH_4_VPIN)
+            ])
+            .then(([status1, status2, status3, status4]) => {
+                connectionStatus.innerHTML = '<i class="fas fa-circle connected"></i> Connected';
+                connectionStatus.classList.add('connected');
+                lastUpdated.textContent = new Date().toLocaleTimeString();
+                
+                // Update UI based on the received statuses
+                const statuses = [status1, status2, status3, status4];
+                
+                statuses.forEach((status, index) => {
+                    const deviceNumber = index + 1;
+                    const isOn = status === 1;
+                    
+                    // Update switch states
+                    document.getElementById(`switch-${deviceNumber}`).checked = isOn;
+                    
+                    // Update device UI
+                    updateDeviceUI(deviceNumber, isOn);
+                    
+                    // Update device states
+                    deviceStates[`switch${deviceNumber}`] = isOn;
+                });
+                
+                // Update active devices count
+                updateActiveDevicesCount();
+            })
+            .catch(error => {
+                connectionStatus.innerHTML = '<i class="fas fa-circle disconnected"></i> Disconnected';
+                connectionStatus.classList.add('disconnected');
+                console.error('Error getting status:', error);
+            });
+        }
+        
+        // Function to fetch pin status
+        function fetchPinStatus(pin) {
+            return fetch(`https://${BLYNK_SERVER}/external/api/get?token=${BLYNK_AUTH}&pin=${pin}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    return parseInt(data.trim());
+                });
+        }
+        
+        // Make sure all initial switch states are set to OFF
+        function ensureInitialOff() {
+            // Setting all switches to unchecked initially
+            switch1Element.checked = false;
+            switch2Element.checked = false;
+            switch3Element.checked = false;
+            switch4Element.checked = false;
+            
+            // Update device UI to show all are OFF
+            updateDeviceUI(1, false);
+            updateDeviceUI(2, false);
+            updateDeviceUI(3, false);
+            updateDeviceUI(4, false);
+            
+            // Update device states
+            deviceStates.switch1 = false;
+            deviceStates.switch2 = false;
+            deviceStates.switch3 = false;
+            deviceStates.switch4 = false;
+            
+            // Update active devices count
+            updateActiveDevicesCount();
+        }
+        
+        // Scene activation functions
+        function activateMorningScene() {
+            // Turn on main light and fan
+            updatePinValue(SWITCH_1_VPIN, "1"); // Main light on
+            updatePinValue(SWITCH_2_VPIN, "0"); // Table lamp off
+            updatePinValue(SWITCH_3_VPIN, "1"); // Fan on
+            updatePinValue(SWITCH_4_VPIN, "0"); // AC off
+            
+            // Update UI
+            setTimeout(() => {
+                refreshStatus();
+                showToast('Morning scene activated', 'success');
+            }, 1000);
+        }
+        
+        function activateNightScene() {
+            // Turn on only table lamp
+            updatePinValue(SWITCH_1_VPIN, "0"); // Main light off
+            updatePinValue(SWITCH_2_VPIN, "1"); // Table lamp on
+            updatePinValue(SWITCH_3_VPIN, "0"); // Fan off
+            updatePinValue(SWITCH_4_VPIN, "0"); // AC off
+            
+            // Update UI
+            setTimeout(() => {
+                refreshStatus();
+                showToast('Night scene activated', 'success');
+            }, 1000);
+        }
+        
+        function activateAwayScene() {
+            // Turn off all devices
+            updatePinValue(SWITCH_1_VPIN, "0"); // Main light off
+            updatePinValue(SWITCH_2_VPIN, "0"); // Table lamp off
+            updatePinValue(SWITCH_3_VPIN, "0"); // Fan off
+            updatePinValue(SWITCH_4_VPIN, "0"); // AC off
+            
+            // Update UI
+            setTimeout(() => {
+                refreshStatus();
+                showToast('Away scene activated - all devices off', 'success');
+            }, 1000);
+        }
+        
+        function activateMovieScene() {
+            // Dim lights (table lamp only) and AC on
+            updatePinValue(SWITCH_1_VPIN, "0"); // Main light off
+            updatePinValue(SWITCH_2_VPIN, "1"); // Table lamp on
+            updatePinValue(SWITCH_3_VPIN, "0"); // Fan off
+            updatePinValue(SWITCH_4_VPIN, "1"); // AC on
+            
+            // Update UI
+            setTimeout(() => {
+                refreshStatus();
+                showToast('Movie scene activated', 'success');
+            }, 1000);
+        }
+        
+        // Function to show toast notifications
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            
+            const icon = type === 'success' ? 'check-circle' : 'exclamation-circle';
+            
+            toast.innerHTML = `
+                <div class="toast-icon"><i class="fas fa-${icon}"></i></div>
+                <div class="toast-message">${message}</div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Show the toast after a small delay (for animation)
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            
+            // Remove the toast after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    toastContainer.removeChild(toast);
+                }, 300);
+            }, 3000);
+        }
+        
+        // Logout function
+        function logout() {
+            sessionStorage.removeItem('isLoggedIn');
+            window.location.href = 'login.html';
+        }
+        
+        // Initial setup
+        ensureInitialOff();
+        
+        // Initial status check (with a slight delay to allow server sync)
+        setTimeout(refreshStatus, 1000);
+        
+        // Periodic refresh (every 10 seconds)
+        setInterval(refreshStatus, 10000);
+    </script>
+</body>
+</html>
