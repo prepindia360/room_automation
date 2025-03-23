@@ -1,7 +1,7 @@
 // Blynk credentials
-#define BLYNK_TEMPLATE_ID "TMPL3vD9CMwx7"
-#define BLYNK_TEMPLATE_NAME "Room Automation"
-#define BLYNK_AUTH_TOKEN "-6jzpd2c9reJTLWEiaidb0iqtgNLSd4_"
+#define BLYNK_TEMPLATE_ID "TMPL3pkCAQUrt"
+#define BLYNK_TEMPLATE_NAME "Room Auto"
+#define BLYNK_AUTH_TOKEN "wCNRCJNTFQFhlxbRupY7x2J-cLuIfHum"
 
 #include <WiFi.h>
 #include <BlynkSimpleEsp32.h>
